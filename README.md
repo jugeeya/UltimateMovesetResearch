@@ -1,5 +1,3 @@
-To run, create a .c file that associates the hashes to each animation name, and run
+To run, find the hash scripts containing calls to lua2cpp::L2CFighterAnimcmdGameCommon::L2CFighterAnimcmdGameCommon() (and the equivalents for Effect, Expression, and Sound), and run:
 
-```
-python parseAnimcmd.py [path/to/C/file]
-```
+File->Script File->renameACMDScripts.py
