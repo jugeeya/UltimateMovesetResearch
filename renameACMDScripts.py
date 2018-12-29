@@ -47,19 +47,30 @@ def animcmdHashTable(filetext):
     for line in lines:
         if "lib::L2CAgent::sv_set_function_hash" in line:
             if ");" in line:
-                functionMatch = re.search('hash\(.*\, (\\w+)\,', line)
+                functionMatch = re.search('hash\(.*\, (\\w+)\, \~?(v\\d+)', line)
                 if functionMatch:
                     functionName = functionMatch.group(1)
-                    hashTable[functionName] = getACMDName(animation)
+                    varGet = functionMatch.group(2)
+                    if varGet in variableValues:
+                        hashTable[functionName] = getACMDName(variableValues[varGet])
+                    else:
+                        hashTable[functionName] = getACMDName(animation)
                     animation = ""
             else:
                 inSetHashCall = True
                 setHashParam = 1
                 continue
 
-        charMatch = re.search('(v\\d*) = phx::detail::CRC32Table::table\_.*(v\\d*)\ \^\ (0x..)', line)
-        charMatchCall = re.search('phx::detail::CRC32Table::table\_.*(v\\d*)\ \^\ (0x..)', line)
-        setVarMatch = re.search('(v\\d*).*(v\\d*).*;', line)
+        charMatch = charMatch = re.search('(v\\d*) = phx::detail::CRC32Table::table\_.*(v\\d*).*(?:v\\d*).*\^\ (0x..)', line)
+        if not charMatch:
+            charMatch = re.search('(v\\d*) = phx::detail::CRC32Table::table\_.*(v\\d*).*\^\ (0x..)', line)
+        charMatchCall = re.search('phx::detail::CRC32Table::table\_.*(v\\d*).*(?:v\\d*).*\^\ (0x..)', line)
+        if not charMatchCall:
+            charMatchCall = re.search('phx::detail::CRC32Table::table\_.*(v\\d*)\ \^\ (0x..)', line)
+        
+        setVarMatch = re.search('(v\\d*) = (v\\d*).*;', line)
+        if not setVarMatch:
+            setVarMatch = re.search('(v\\d*) = .*(v\\d*).*;', line)
         if charMatch:
             varSet = charMatch.group(1)
             varGet = charMatch.group(2)
@@ -87,7 +98,6 @@ def animcmdHashTable(filetext):
             animation = variableValues[varSet]
 
         if inSetHashCall:
-            print line, setHashParam
             if setHashParam == 1:
                 setHashParam += 1
             elif setHashParam == 2:
